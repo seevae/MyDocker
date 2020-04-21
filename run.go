@@ -2,14 +2,12 @@ package main
 
 import(
 	"github.com/seevae/mydocker/container"
-	"github.com/seevae/mydocker/cgroups/subsystems"
-	"github.com/seevae/mydocker/cgroups"
 	log "github.com/Sirupsen/logrus"
 	"os"
 	"strings"
 )
 
-func Run(tty bool,comArray []string,res *subsystems.ResourceConfig){
+func Run(tty bool,comArray []string){
 	parent,writePipe:=container.NewParentProcess(tty)
 	if parent == nil{
 		log.Errorf("New parent process error")
@@ -19,13 +17,9 @@ func Run(tty bool,comArray []string,res *subsystems.ResourceConfig){
 		log.Error(err)
 	}
 
-	cgroupManager := cgroups.NewCgroupManager("mydocker-cgroup")
-	defer cgroupManager.Destory()
-	cgroupManager.Set(res)
-	cgroupManager.Apply(parent.Process.Pid)
-
 	sendInitCommand(comArray,writePipe)
 	parent.Wait()
+	os.Exit(0)
 }
 
 func sendInitCommand(comArray []string, writePipe *os.File){
